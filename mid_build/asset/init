@@ -2,14 +2,17 @@
 set -e
 
 MID_HOME="/opt/snc_mid_server/agent"
-CONF_FILE="${MID_HOME}/config.xml"
-WRAPPER_CONF_FILE="${MID_HOME}/conf/wrapper-override.conf"
 
 # Mandatory ENV
 MID_INSTANCE_URL=${MID_INSTANCE_URL:-}
 MID_INSTANCE_USERNAME=${MID_INSTANCE_USERNAME:-}
 MID_INSTANCE_PASSWORD=${MID_INSTANCE_PASSWORD:-}
 MID_SERVER_NAME=${MID_SERVER_NAME:-}
+
+# RW Directory that the process can be copied over to.  Necessary to configure the MID server, write the pid file, and configure the wrapper
+MID_WORKING_DIR=${MID_WORKING_DIR:-}
+CONF_FILE="${MID_WORKING_DIR}/agent/config.xml"
+WRAPPER_CONF_FILE="${MID_WORKING_DIR}/agent/conf/wrapper-override.conf"
 
 # Secret
 MID_SECRETS_FILE=${MID_SECRETS_FILE:-}
@@ -36,8 +39,12 @@ EXIT_CODE_MUTUAL_AUTH_SETUP_FAILURE=3
 IS_MUTUAL_AUTH=0
 
 # File to track setup completion
-MID_INITIALIZED_FILE="${MID_HOME}/.initialized"
+MID_INITIALIZED_FILE="${MID_WORKING_DIR}/.initialized"
 
+prepWorkingDir () {
+  cp -pr /opt/snc_mid_server/* ${MID_WORKING_DIR}
+
+}
 generateConfigXml () {
   echo "DOCKER: setting up config.xml"
 
@@ -75,10 +82,10 @@ generateConfigXml () {
   done
 
   # Fill in $MID_CONTAINER_DEPLOYMENT_NAME in .container
-  sed -i "s/ContainerDeploymentName=.*/ContainerDeploymentName=${MID_CONTAINER_DEPLOYMENT_NAME}/g" .container 
+  sed -i "s/ContainerDeploymentName=.*/ContainerDeploymentName=${MID_CONTAINER_DEPLOYMENT_NAME}/g" ${MID_WORKING_DIR}/.container 
   
   # Fill in $DEPLOYMENT_MID_ID in .container
-  sed -i "s/DeploymentMidId=.*/DeploymentMidId=${DEPLOYMENT_MID_ID}/g" .container 
+  sed -i "s/DeploymentMidId=.*/DeploymentMidId=${DEPLOYMENT_MID_ID}/g" ${MID_WORKING_DIR}/.container 
     
 
   # Handle secrets file. Secrets file has priority over default and generic prarams
@@ -105,7 +112,7 @@ generateConfigXml () {
     # Ensure log file exists for logger in java classes
     touch /home/mid/java0.log
 
-    cd /opt/snc_mid_server/agent && \
+    cd ${MID_WORKING_DIR}/agent && \
       sh bin/scripts/manage-certificates.sh -a "DefaultSecurityKeyPairHandle" $MID_MUTUAL_AUTH_PEM_FILE
 
     if [[ $? != 0 ]]
@@ -114,7 +121,7 @@ generateConfigXml () {
       exit $EXIT_CODE_MUTUAL_AUTH_SETUP_FAILURE
     fi
 
-    cd /opt/snc_mid_server/agent && \
+    cd ${MID_WORKING_DIR}/agent && \
       sh bin/scripts/manage-certificates.sh -m
 
     if [[ $? != 0 ]]
@@ -295,36 +302,36 @@ MAX_INIT_WAIT_TIME=60
 
 midStart () {
 
-  touch /opt/snc_mid_server/agent/logs/agent0.log.0
+  touch ${MID_WORKING_DIR}/agent/logs/agent0.log.0
 
   echo "DOCKER: starting mid server"
 
-  /opt/snc_mid_server/agent/bin/mid.sh start &
+  ${MID_WORKING_DIR}/agent/bin/mid.sh start &
 
   # CLI does not fully spawned and need a wait until the process generated. Not having the wait would make container
   # to exit immediately.
   waitTime=0
-  while [ ! -f /opt/snc_mid_server/agent/work/mid.pid ] && [ "$waitTime" -lt "$MAX_INIT_WAIT_TIME" ]
+  while [ ! -f ${MID_WORKING_DIR}/agent/work/mid.pid ] && [ "$waitTime" -lt "$MAX_INIT_WAIT_TIME" ]
   do
     sleep 5
     waitTime=$(( $waitTime + 5 ))
     echo "DOCKER: Mid wrapper init taking $waitTime sec .."
   done
 
-  wrapper_pid=$(cat /opt/snc_mid_server/agent/work/mid.pid)
+  wrapper_pid=$(cat ${MID_WORKING_DIR}/agent/work/mid.pid)
 
   # In addition, we rely on CLI execution to restart MID service which should not exit the container either.
   # We would need a way to keep container alive
   while true
   do
-      tail -F /opt/snc_mid_server/agent/logs/agent0.log.0 & wait ${!}
+      tail -F ${MID_WORKING_DIR}/agent/logs/agent0.log.0 & wait ${!}
   done
 
 }
 
 _handleSignal_SIGTERM() {
   echo "DOCKER: Received signal SIGTERM, gracefully shut down mid before exiting..."
-  /opt/snc_mid_server/agent/bin/mid.sh stop
+  ${MID_WORKING_DIR}/agent/bin/mid.sh stop
 
   exit $EXIT_CODE_NORMAL_SHUTDOWN
 }
@@ -332,13 +339,13 @@ _handleSignal_SIGTERM() {
 midStop () {
   echo "DOCKER: stopping mid server"
 
-  /opt/snc_mid_server/agent/bin/mid.sh stop
+  ${MID_WORKING_DIR}/agent/bin/mid.sh stop
 }
 
 midRestart () {
   echo "DOCKER: restarting mid server"
 
-  /opt/snc_mid_server/agent/bin/mid.sh restart
+  ${MID_WORKING_DIR}/agent/bin/mid.sh restart
 }
 
 midSetup () {

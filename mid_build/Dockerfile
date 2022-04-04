@@ -72,6 +72,7 @@ ENV MID_INSTANCE_URL "" \
     MID_INSTANCE_USERNAME "" \
     MID_INSTANCE_PASSWORD "" \
     MID_SERVER_NAME "" \
+    MID_WORKING_DIR "" \
 
 # Optional Env Var
     MID_PROXY_HOST "" \

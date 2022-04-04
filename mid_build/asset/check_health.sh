@@ -1,5 +1,8 @@
 #!/bin/bash
 #
+MID_WORKING_DIR=${MID_WORKING_DIR:-}
+
+cd ${MID_WORKING_DIR}
 
 if [ ! -f agent/work/mid.pid ]
 then

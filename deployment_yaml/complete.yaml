@@ -8,7 +8,7 @@ metadata:
 apiVersion: apps/v1 
 kind: Deployment 
 metadata: 
-  name: mid-deployment 
+  name: mid-deployment
   namespace: servicenow 
   annotations: 
     testannotation: "thisismytest"
@@ -55,3 +55,11 @@ spec:
               value: "" 
             - name: MID_MUTUAL_AUTH_PEM_FILE 
               value: "" 
+            - name: MID_WORKING_DIR
+              value: "/emptyDir/snc_mid_server"
+      volumeMounts:
+      - mountPath: "/emptyDir/snc_mid_server"
+        name: working-dir
+    volumes:
+    - name: working-dir
+      emptyDir: {}
