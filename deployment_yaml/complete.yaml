@@ -1,0 +1,57 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: servicenow
+  labels:
+    name: servicenow
+---
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: mid-deployment 
+  namespace: servicenow 
+  annotations: 
+    testannotation: "thisismytest"
+spec: 
+  selector: 
+    matchLabels: 
+      app: mid 
+  replicas: 1 
+  template: 
+    metadata: 
+      labels: 
+        app: mid 
+      name: mid 
+    spec: 
+      containers:
+        - name: mid-service 
+          imagePullPolicy: Always 
+          image: k8smid.azurecr.io/k8smid:latest
+          resources:
+            requests:
+              cpu: 50m
+              memory: 300M
+          env: 
+            - name: MID_INSTANCE_URL 
+              value: "https://mtg3demo.service-now.com"
+            - name: MID_INSTANCE_USERNAME 
+              value: "k8smid_user" 
+            - name: MID_INSTANCE_PASSWORD 
+              valueFrom:
+               secretKeyRef:
+                  name: mid-server-secret
+                  key: SN_PASSWD
+            - name: MID_SECRETS_FILE 
+              value: "" 
+            - name: MID_SERVER_NAME 
+              value: "SanDiegoMIDContainer"
+            - name: MID_PROXY_HOST 
+              value: "" 
+            - name: MID_PROXY_PORT 
+              value: "" 
+            - name: MID_PROXY_USERNAME 
+              value: "" 
+            - name: MID_PROXY_PASSWORD 
+              value: "" 
+            - name: MID_MUTUAL_AUTH_PEM_FILE 
+              value: "" 
