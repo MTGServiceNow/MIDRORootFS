@@ -58,9 +58,9 @@ RUN yum update -y && \
 
 ARG MID_USERNAME=mid
 
-ARG GROUP_ID=1001
+ARG GROUP_ID=101
 
-ARG USER_ID=1001
+ARG USER_ID=101
 
 
 # ############################
@@ -84,8 +84,8 @@ ENV MID_INSTANCE_URL "" \
     MID_MUTUAL_AUTH_PEM_FILE ""
 
 
-RUN if [[ -z "${GROUP_ID}" ]]; then GROUP_ID=1001; fi && \
-		if [[ -z "${USER_ID}" ]]; then USER_ID=1001; fi && \
+RUN if [[ -z "${GROUP_ID}" ]]; then GROUP_ID=101; fi && \
+		if [[ -z "${USER_ID}" ]]; then USER_ID=101; fi && \
         echo "Add GROUP id: ${GROUP_ID}, USER id: ${USER_ID} for username: ${MID_USERNAME}"
 
 

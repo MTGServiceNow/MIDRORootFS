@@ -43,7 +43,7 @@ MID_INITIALIZED_FILE="${MID_WORKING_DIR}/.initialized"
 
 prepWorkingDir () {
   echo "DOCKER: Prepping working directory"
-  cp -pr /opt/snc_mid_server/* ${MID_WORKING_DIR}
+  cp -r /opt/snc_mid_server/* ${MID_WORKING_DIR}
 
 }
 generateConfigXml () {

@@ -22,6 +22,12 @@ spec:
       labels: 
         app: mid 
       name: mid 
+    securityContext:
+      runAsUser: 101
+      runAsGroup: 101
+      fsGroup: 101
+      supplementalGroups:
+        - 150
     spec: 
       containers:
         - name: mid-service 
@@ -60,6 +66,15 @@ spec:
       volumeMounts:
       - mountPath: "/emptyDir/snc_mid_server"
         name: working-dir
+      securityContext:
+        runAsUser: 101
+        runAsGroup: 101
+        allowPrivilegeEscalation: false
+        privileged: false
+        procMount: default
+        readOnlyRootFilesystem: true
+        seccompProfile:
+          type: RuntimeDefault
     volumes:
     - name: working-dir
       emptyDir: {}
