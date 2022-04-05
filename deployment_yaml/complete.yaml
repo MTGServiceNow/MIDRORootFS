@@ -8,7 +8,7 @@ metadata:
 apiVersion: apps/v1 
 kind: Deployment 
 metadata: 
-  name: mid-deployment
+  name: mid-rofs-deployment
   namespace: servicenow 
   annotations: 
     testannotation: "thisismytest"
@@ -22,26 +22,29 @@ spec:
       labels: 
         app: mid 
       name: mid 
-    securityContext:
-      runAsUser: 101
-      runAsGroup: 101
-      fsGroup: 101
-      supplementalGroups:
-        - 150
     spec: 
       containers:
         - name: mid-service 
           imagePullPolicy: Always 
-          image: k8smid.azurecr.io/k8smid:latest
+          image: k8smid.azurecr.io/k8smidroroot:latest
           resources:
             requests:
               cpu: 50m
               memory: 300M
+          securityContext:
+            runAsUser: 101
+            runAsGroup: 101
+            allowPrivilegeEscalation: false
+            privileged: false
+            procMount: default
+            readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
           env: 
             - name: MID_INSTANCE_URL 
               value: "https://mtg3demo.service-now.com"
             - name: MID_INSTANCE_USERNAME 
-              value: "k8smid_user" 
+              value: "k8smid_user2" 
             - name: MID_INSTANCE_PASSWORD 
               valueFrom:
                secretKeyRef:
@@ -63,18 +66,9 @@ spec:
               value: "" 
             - name: MID_WORKING_DIR
               value: "/emptyDir/snc_mid_server"
-      volumeMounts:
-      - mountPath: "/emptyDir/snc_mid_server"
-        name: working-dir
-      securityContext:
-        runAsUser: 101
-        runAsGroup: 101
-        allowPrivilegeEscalation: false
-        privileged: false
-        procMount: default
-        readOnlyRootFilesystem: true
-        seccompProfile:
-          type: RuntimeDefault
-    volumes:
-    - name: working-dir
-      emptyDir: {}
+          volumeMounts:
+          - mountPath: "/emptyDir/snc_mid_server"
+            name: working-dir
+      volumes:
+      - name: working-dir
+        emptyDir: {}
