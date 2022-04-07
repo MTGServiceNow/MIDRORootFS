@@ -10,8 +10,6 @@ kind: Deployment
 metadata: 
   name: mid-rofs-deployment
   namespace: servicenow 
-  annotations: 
-    testannotation: "thisismytest"
 spec: 
   selector: 
     matchLabels: 
@@ -26,7 +24,7 @@ spec:
       containers:
         - name: mid-service 
           imagePullPolicy: Always 
-          image: k8smid.azurecr.io/k8smidroroot:latest
+          image: <image name>
           resources:
             requests:
               cpu: 50m
@@ -42,9 +40,9 @@ spec:
               type: RuntimeDefault
           env: 
             - name: MID_INSTANCE_URL 
-              value: "https://mtg3demo.service-now.com"
+              value: ""
             - name: MID_INSTANCE_USERNAME 
-              value: "k8smid_user2" 
+              value: "" 
             - name: MID_INSTANCE_PASSWORD 
               valueFrom:
                secretKeyRef:
@@ -53,7 +51,7 @@ spec:
             - name: MID_SECRETS_FILE 
               value: "" 
             - name: MID_SERVER_NAME 
-              value: "SanDiegoMIDContainer"
+              value: ""
             - name: MID_PROXY_HOST 
               value: "" 
             - name: MID_PROXY_PORT 

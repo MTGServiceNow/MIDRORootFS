@@ -43,15 +43,10 @@ MID_INITIALIZED_FILE="${MID_WORKING_DIR}/.initialized"
 
 prepWorkingDir () {
   echo "DOCKER: Prepping working directory"
-  echo "DOCKER: Before Cleaning"
-  ls -lart ${MID_WORKING_DIR}
   rm -fr ${MID_WORKING_DIR}/*
-  echo "DOCKER: After Cleaning"
-  ls -lart ${MID_WORKING_DIR}
   cp -rfv /opt/snc_mid_server/. ${MID_WORKING_DIR}
-  ls -lart ${MID_WORKING_DIR}/agent/
-
 }
+
 generateConfigXml () {
 
   prepWorkingDir
